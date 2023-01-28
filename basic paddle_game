@@ -1,0 +1,125 @@
+import turtle 
+g=turtle.Screen()
+g.title("Welcome to Pong game")
+g.bgcolor("black")
+g.setup(width=800, height=600)
+g.tracer(0) #stops window from updating. Speed up game.
+
+#Points
+pointa = 0
+pointb = 0
+
+
+#Paddle1
+paddle1=turtle.Turtle() 
+paddle1.speed(0) 
+paddle1.shape("square")
+paddle1.color("white")
+paddle1.shapesize(stretch_wid=5, stretch_len=1)
+paddle1.penup()  
+paddle1.goto(-350, 0) 
+
+#Paddle2
+paddle2=turtle.Turtle()  
+paddle2.speed(0) 
+paddle2.shape("square")
+paddle2.color("white")
+paddle2.shapesize(stretch_wid=5, stretch_len=1)
+paddle2.penup() 
+paddle2.goto(350, 0) 
+
+#Ball
+ball=turtle.Turtle() 
+ball.speed(0) 
+ball.shape("square")
+ball.color("white")
+ball.penup() 
+ball.goto(0,0) 
+ball.dx = 1.5 
+ball.dy = -1.5 
+
+#Score
+score = turtle.Turtle()
+score.speed(0)
+score.color("red")
+score.penup()
+score.hideturtle()
+score.goto(0,260)
+score.write("Player A: {}  Player B: {}".format(pointa, pointb), align="center", font=("Courier", 24, "normal"))
+
+
+
+#Function
+def paddle1_up():
+    y=paddle1.ycor() 
+    y += 20
+    paddle1.sety(y)
+
+def paddle1_down():
+    y=paddle1.ycor() 
+    y -= 20
+    paddle1.sety(y)
+
+def paddle2_up():
+    y=paddle2.ycor()
+    y += 20
+    paddle2.sety(y)
+
+def paddle2_down():
+    y=paddle2.ycor()
+    y -= 20
+    paddle2.sety(y)
+
+#Keyboard binding
+g.listen() #listen for keyboard input
+g.onkey(paddle1_up, "w")
+g.onkey(paddle1_down, "s")
+g.onkey(paddle2_up, "Up")
+g.onkey(paddle2_down, "Down")
+
+
+
+
+#Main game loop
+while True: 
+    g.update() 
+
+    # Move the ball
+    ball.setx(ball.xcor() + ball.dx)
+    ball.sety(ball.ycor() + ball.dy)
+
+    #Border
+    if ball.ycor() > 290:
+        ball.sety(290) 
+        ball.dy *= -1 
+
+    if ball.ycor() < -290:
+        ball.sety(-290) 
+        ball.dy *= -1 
+
+    if ball.xcor() > 390:
+        ball.goto(0,0) 
+        ball.dx *= -1
+        pointa += 1
+        score.clear()
+        score.write("Player A: {}  Player B: {}".format(pointa, pointb), align="center", font=("Courier", 24, "normal"))
+
+
+    if ball.xcor() < -390:
+        ball.goto(0,0) #ball starts from (0,0) after it bounces back.
+        ball.dx *= -1
+        pointb += 1
+        score.clear()
+        score.write("Player A: {}  Player B: {}".format(pointa, pointb), align="center", font=("Courier", 24, "normal"))
+
+
+    #paddle-ball collision
+    if (ball.xcor() > 340 and ball.xcor() < 350) and (ball.ycor() < paddle2.ycor() + 40 and ball.ycor() > paddle2.ycor() - 40):
+        ball.setx(340)
+        ball.dx *= -1
+    
+    if (ball.xcor() < -340 and ball.xcor() > -350) and (ball.ycor() < paddle1.ycor() + 40 and ball.ycor() > paddle1.ycor() - 40):
+        ball.setx(340)
+        ball.dx *= -1
+
+
