@@ -1,0 +1,57 @@
+#Blender scripting for creating fibres
+import bpy
+import csv
+import os
+
+# Folder containing your CSV file
+data_directory = "/Users/mercyjoshan/Desktop/fibres data/corrected_csv_data2/ccd2"  # Update with your file path
+
+def create_fiber(data_points):
+    # Create an empty list to store vertices and radii
+    vertices = []
+    radii = []
+
+    # Extract top and bottom diameters
+    top_diameter = float(data_points[0][-1])  # Diameter at the top of the fiber
+    bottom_diameter = float(data_points[-1][-1])  # Diameter at the bottom of the fiber
+
+    # Calculate the diameter step
+    num_points = len(data_points)
+    diameter_step = (top_diameter - bottom_diameter) / (num_points - 1)
+
+    # Iterate through the data points and extract coordinates and diameter
+    for i, data_point in enumerate(data_points):
+        coordinate_x, coordinate_y, coordinate_z, diameter = map(float, data_point)
+        diameter = top_diameter - i * diameter_step
+        # Append the coordinates to the vertices list
+        vertices.append((coordinate_x, coordinate_y, coordinate_z))
+        radii.append(diameter / 2)
+
+    # Create a mesh
+    mesh = bpy.data.meshes.new(name="FiberMesh")
+    mesh.from_pydata(vertices, [], [])
+
+    # Create a curve object
+    curve = bpy.data.curves.new(name="FiberCurve", type='CURVE')
+    curve.dimensions = '3D'
+    spline = curve.splines.new(type='NURBS')
+    spline.points.add(len(vertices) - 1)
+    for i, (vertex, radius) in enumerate(zip(vertices, radii)):
+        x, y, z = vertex
+        spline.points[i].co = (x, y, z, 1)
+        spline.points[i].radius = radius
+
+    # Create an object and link it to the mesh
+    obj = bpy.data.objects.new(name="FiberObject", object_data=curve)
+    bpy.context.collection.objects.link(obj)
+    
+for file_name in os.listdir(data_directory):
+    if file_name.endswith(".csv"):  # Check if the file is a CSV file
+        file_path = os.path.join(data_directory, file_name)  # Constructing the full path to the CSV file
+        with open(file_path, 'r') as file:
+            reader = csv.reader(file)
+            next(reader)  # Skipping the header
+            data_points = list(reader)  # Read all data points from the CSV file
+            create_fiber(data_points)
+
+print("All fibers generated successfully!")
